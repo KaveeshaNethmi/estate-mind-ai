@@ -1,0 +1,65 @@
+# ==========================
+# Python
+# ==========================
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# ==========================
+# Environment Variables
+# ==========================
+
+.env
+
+# ==========================
+# IDE
+# ==========================
+
+.vscode/
+.idea/
+
+# ==========================
+# OS
+# ==========================
+
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Vector Store
+# ==========================
+
+# Ignore generated FAISS files
+vector_store/*.index
+vector_store/*.json
+
+# Keep the folder
+!vector_store/.gitkeep
+
+# ==========================
+# Python Testing
+# ==========================
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==========================
+# Logs
+# ==========================
+
+*.log
+
+# ==========================
+# Build
+# ==========================
+
+dist/
+build/
