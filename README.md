@@ -268,7 +268,7 @@ Example Response
 Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/KaveeshaNethmi/estate-mind-ai.git
 
 cd estate-mind-ai
 ```
