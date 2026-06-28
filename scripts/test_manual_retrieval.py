@@ -3,7 +3,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.services.llm_service import generate_answer
+from app.services.manual_rag.llm_service import generate_answer
 
 
 def main():

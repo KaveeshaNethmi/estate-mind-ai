@@ -3,7 +3,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.services.retrieval_service import retrieve_similar_properties
+from app.services.manual_rag.retrieval_service import retrieve_similar_properties
 
 print(__name__)
 

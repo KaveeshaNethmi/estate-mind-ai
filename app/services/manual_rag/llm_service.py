@@ -1,7 +1,7 @@
 from openai import OpenAI
 
 from app.core.config import OPENAI_API_KEY
-from app.services.retrieval_service import retrieve_similar_properties
+from app.services.manual_rag.retrieval_service import retrieve_similar_properties
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 

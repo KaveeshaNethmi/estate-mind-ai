@@ -6,8 +6,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import get_properties_collection
 from app.services.property_formatter import convert_property_to_text
-from app.services.embedding_service import generate_embedding
-from app.services.vector_store_service import add_embeddings_to_index, save_faiss_index
+from app.services.manual_rag.embedding_service import generate_embedding
+from app.services.manual_rag.vector_store_service import add_embeddings_to_index, save_faiss_index
 
 load_dotenv()
 

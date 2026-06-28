@@ -27,3 +27,5 @@ INDEX_PATH = (
 METADATA_PATH = (
     f"{VECTOR_STORE_DIR}/metadata.json"  # Stores information about each vetor
 )
+
+LANGCHAIN_VECTOR_STORE_PATH = f"{VECTOR_STORE_DIR}/langchain_faiss_index" # Where FAISS stores using Langchain 

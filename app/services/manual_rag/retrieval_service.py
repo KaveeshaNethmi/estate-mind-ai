@@ -1,7 +1,7 @@
 import numpy as np
 
-from app.services.embedding_service import generate_embedding
-from app.services.vector_store_service import load_faiss_index
+from app.services.manual_rag.embedding_service import generate_embedding
+from app.services.manual_rag.vector_store_service import load_faiss_index
 
 
 def retrieve_similar_properties(query: str, top_k: int = 5):
