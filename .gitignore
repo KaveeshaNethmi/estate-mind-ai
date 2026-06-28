@@ -39,6 +39,7 @@ Thumbs.db
 # Ignore generated FAISS files
 vector_store/*.index
 vector_store/*.json
+vector_store/langchain_faiss_index/
 
 # Keep the folder
 !vector_store/.gitkeep
