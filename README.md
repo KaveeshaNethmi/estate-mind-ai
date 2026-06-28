@@ -1,55 +1,74 @@
 # 🏡 EstateMind AI - Real Estate AI Copilot
 
-A production-style **Retrieval-Augmented Generation (RAG)** application that enables users to interact with a real estate property database using natural language.
+A production-style **Retrieval-Augmented Generation (RAG)** application that allows users to interact with a real estate property database using natural language.
 
-Instead of relying solely on an LLM's internal knowledge, EstateMind AI retrieves relevant property data from a vector database, grounds the response with real property information, and generates accurate, context-aware answers.
+EstateMind AI retrieves relevant property data from a vector database, grounds the response with real property information, and generates context-aware answers using an LLM.
 
-This project was intentionally built **without LangChain** to understand the complete RAG pipeline from first principles before using higher-level frameworks.
+This project includes **two RAG implementations**:
+
+1. **Manual RAG Implementation**  
+   Built from first principles using OpenAI Embeddings, FAISS, NumPy, and FastAPI.
+
+2. **LangChain RAG Implementation**  
+   Rebuilt using LangChain to compare framework-based development with the manual approach.
 
 ---
 
-# 🚀 Features
+## 🚀 Features
 
-## 🔎 Semantic Property Search
-- Natural language search using OpenAI embeddings
-- Retrieve semantically similar properties
-- Vector similarity search using FAISS
+### 🔎 Semantic Property Search
+- Natural language property search
+- OpenAI embedding generation
+- FAISS vector similarity search
+- Top-K relevant property retrieval
 
-## 🏠 Real Estate AI Copilot
-Ask questions such as:
+### 🏠 Real Estate AI Copilot
+Users can ask questions such as:
 
 - Show me furnished apartments in Meydan with good rental yield.
 - Which properties have the highest ROI?
 - Recommend investment-friendly apartments.
 - Compare similar properties.
+- Show apartments under a specific budget.
 
-## 📊 Hybrid Retrieval
-Supports semantic search together with structured filtering.
+### 📊 Hybrid Retrieval
+Combines semantic search with structured metadata filtering.
 
-Example filters:
+Supported filters include:
 
-- Property Type
 - City
 - Area
 - Development
+- Property Type
 - Maximum Price
 - Minimum Bedrooms
 
-## 🧠 Retrieval-Augmented Generation (RAG)
+### 🧠 Manual RAG Pipeline
+The manual implementation was built to understand the complete RAG flow without relying on framework abstractions.
 
-The application performs:
+It includes:
 
-1. Property formatting
-2. Embedding generation
-3. Vector search
-4. Context retrieval
-5. LLM response generation
+- Property-to-text conversion
+- Embedding generation
+- FAISS indexing
+- Metadata storage
+- Similarity search
+- Context construction
+- LLM response generation
 
-to produce grounded AI answers.
+### 🔗 LangChain RAG Pipeline
+The LangChain version uses:
+
+- LangChain `Document`
+- `OpenAIEmbeddings`
+- LangChain FAISS VectorStore
+- `ChatPromptTemplate`
+- `ChatOpenAI`
+- Runnable chain execution
 
 ---
 
-# 🏗 Architecture
+## 🏗 Architecture
 
 ```text
                          User Question
@@ -70,7 +89,7 @@ to produce grounded AI answers.
                   Build Context for the LLM
                                │
                                ▼
-                    OpenAI GPT-4.1 Mini
+                    OpenAI GPT Model
                                │
                                ▼
                          Final AI Response
@@ -78,35 +97,33 @@ to produce grounded AI answers.
 
 ---
 
-# 🛠 Tech Stack
+## 🛠 Tech Stack
 
 ### Backend
-
 - Python
 - FastAPI
 
-### AI
-
+### AI / LLM
 - OpenAI GPT-4.1 Mini
-- OpenAI text-embedding-3-small
+- OpenAI `text-embedding-3-small`
 
 ### Vector Search
-
 - FAISS
+- LangChain FAISS VectorStore
 
 ### Database
-
 - MongoDB
 
-### Other
-
+### Frameworks / Libraries
+- LangChain
 - NumPy
 - PyMongo
 - python-dotenv
+- Pydantic
 
 ---
 
-# 📂 Project Structure
+## 📂 Project Structure
 
 ```text
 estate-mind-ai/
@@ -125,44 +142,53 @@ estate-mind-ai/
 │   │
 │   ├── services/
 │   │   ├── property_formatter.py
-│   │   ├── embedding_service.py
-│   │   ├── vector_store_service.py
-│   │   ├── retrieval_service.py
-│   │   └── llm_service.py
+│   │   │
+│   │   ├── manual_rag/
+│   │   │   ├── embedding_service.py
+│   │   │   ├── vector_store_service.py
+│   │   │   ├── retrieval_service.py
+│   │   │   └── llm_service.py
+│   │   │
+│   │   └── langchain_rag/
+│   │       ├── vector_store_service.py
+│   │       ├── retrieval_service.py
+│   │       └── llm_service.py
 │   │
 │   └── main.py
 │
 ├── scripts/
-│   ├── build_faiss_index.py
-│   └── test_retrieval.py
+│   ├── build_manual_faiss_index.py
+│   ├── build_langchain_faiss_index.py
+│   ├── test_manual_retrieval.py
+│   └── test_langchain_retrieval.py
 │
 ├── vector_store/
-│   ├── properties.index
-│   └── metadata.json
+│   └── .gitkeep
 │
 ├── requirements.txt
 ├── .env.example
+├── .gitignore
 └── README.md
 ```
 
 ---
 
-# ⚙️ How It Works
+## ⚙️ How It Works
 
-## 1. Property Formatting
+### 1. Property Formatting
 
-Each MongoDB property document is converted into a semantic description.
+Each MongoDB property document is converted into a clean semantic text format.
 
 Example:
 
-```
+```text
 1-bedroom furnished apartment located in Meydan, Dubai.
 
 Price: 1,050,700 AED
 
 Rental Yield: 5.1%
 
-ROI (15 Years): 75.4%
+ROI 15 Years: 75.4%
 
 Amenities:
 Shared Spa
@@ -171,101 +197,121 @@ Public Parking
 Children's Play Area
 ```
 
+This improves retrieval quality because embedding models understand natural language better than raw JSON.
+
 ---
 
-## 2. Embedding Generation
+### 2. Embedding Generation
 
-The formatted text is converted into vector embeddings using:
+The formatted property text is converted into vector embeddings using:
 
-```
+```text
 text-embedding-3-small
 ```
 
----
-
-## 3. FAISS Indexing
-
-Embeddings are stored inside a FAISS index.
-
-Metadata is stored separately for fast retrieval.
-
-```
-Vector
-        ↓
-FAISS Index
-
-Metadata
-        ↓
-metadata.json
-```
+Each property becomes a numerical vector that represents its meaning.
 
 ---
 
-## 4. Semantic Retrieval
+### 3. FAISS Indexing
 
-User question:
+The embeddings are stored in FAISS for similarity search.
 
+Manual version:
+
+```text
+vector_store/
+├── properties.index
+└── metadata.json
 ```
-Show me furnished apartments in Meydan with good rental yield.
+
+LangChain version:
+
+```text
+vector_store/
+└── langchain_faiss_index/
+    ├── index.faiss
+    └── index.pkl
 ```
 
-↓
-
-Generate query embedding
-
-↓
-
-Retrieve Top-K similar properties
-
-↓
-
-Apply metadata filters
-
-↓
-
-Pass retrieved context to the LLM.
+These generated vector files are ignored from Git and can be rebuilt using the scripts.
 
 ---
 
-## 5. AI Response
+### 4. Semantic Retrieval
 
-The LLM generates a grounded response using only the retrieved property information.
+When a user asks a question, the system:
+
+1. Converts the question into an embedding
+2. Searches FAISS for similar property vectors
+3. Retrieves the matching property metadata
+4. Applies structured filters
+5. Sends the retrieved context to the LLM
 
 ---
 
-# 📌 API Endpoints
+### 5. AI Response Generation
 
-## Chat
+The LLM generates an answer using only the retrieved property context.
 
+This helps reduce hallucinations because the model is grounded with real property data.
+
+---
+
+## 📌 API Endpoints
+
+### Manual RAG Chat
+
+```http
+POST /chat/manual
 ```
-POST /chat
-```
 
-Example Request
+Example request:
 
 ```json
 {
-    "question": "Show me furnished apartments in Meydan with good rental yield.",
-    "top_k": 5,
-    "development": "Meydan",
-    "max_price": 1200000
-}
-```
-
-Example Response
-
-```json
-{
-    "answer": "...",
-    "sources": [...]
+  "question": "Show me furnished apartments in Meydan with good rental yield.",
+  "top_k": 5,
+  "development": "Meydan",
+  "property_type": "Apartment",
+  "max_price": 1200000
 }
 ```
 
 ---
 
-# ▶️ Running the Project
+### LangChain RAG Chat
 
-Clone the repository
+```http
+POST /chat/langchain
+```
+
+Example request:
+
+```json
+{
+  "question": "Show me furnished apartments in Meydan with good rental yield.",
+  "top_k": 5,
+  "development": "Meydan",
+  "property_type": "Apartment",
+  "max_price": 1200000
+}
+```
+
+Example response:
+
+```json
+{
+  "answer": "...",
+  "sources": [...]
+}
+```
+
+---
+
+## ▶️ Running the Project
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/KaveeshaNethmi/estate-mind-ai.git
@@ -273,71 +319,101 @@ git clone https://github.com/KaveeshaNethmi/estate-mind-ai.git
 cd estate-mind-ai
 ```
 
-Create virtual environment
+Create virtual environment:
 
 ```bash
 python -m venv venv
 ```
 
-Activate
-
-Windows
+Activate virtual environment:
 
 ```bash
 venv\Scripts\activate
 ```
 
-Install dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Create
-
-```
-.env
-```
+Create `.env` file:
 
 ```env
-OPENAI_API_KEY=your_api_key
+OPENAI_API_KEY=your_openai_api_key
 
-MONGO_URI=...
+MONGO_URI=mongodb://localhost:27017
 
-DB_NAME=...
+DB_NAME=your_database_name
 
-COLLECTION_NAME=...
+COLLECTION_NAME=your_collection_name
 ```
 
-Build the FAISS index
+Build the manual FAISS index:
 
 ```bash
-python scripts/build_faiss_index.py
+python scripts/build_manual_faiss_index.py
 ```
 
-Start the server
+Build the LangChain FAISS index:
+
+```bash
+python scripts/build_langchain_faiss_index.py
+```
+
+Start the FastAPI server:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Open Swagger
+Open Swagger UI:
 
-```
+```text
 http://localhost:8000/docs
 ```
 
 ---
 
-# 📖 What I Learned
+## 🧪 Manual RAG vs LangChain RAG
+
+### Manual RAG
+
+The manual implementation gives full control over:
+
+- Embedding generation
+- Vector creation
+- FAISS indexing
+- Metadata mapping
+- Similarity search
+- Context construction
+
+This helped me understand how RAG works internally.
+
+### LangChain RAG
+
+The LangChain implementation reduces boilerplate and improves developer productivity by abstracting:
+
+- Document handling
+- VectorStore management
+- Retriever logic
+- Prompt chaining
+- LLM invocation
+
+This helped me understand how frameworks simplify production AI development.
+
+---
+
+## 📖 What I Learned
 
 This project helped me gain practical experience with:
 
-- Retrieval-Augmented Generation (RAG)
+- Retrieval-Augmented Generation
 - OpenAI Embeddings
-- Semantic Search
 - Vector Databases
 - FAISS
+- LangChain
+- Semantic Search
 - Hybrid Retrieval
 - Prompt Engineering
 - Context Grounding
@@ -347,9 +423,8 @@ This project helped me gain practical experience with:
 
 ---
 
-# 🚀 Future Improvements
+## 🚀 Future Improvements
 
-- LangChain implementation
 - Pinecone integration
 - Conversational memory
 - Property comparison
@@ -359,35 +434,34 @@ This project helped me gain practical experience with:
 - Conversation history
 - Citation support
 - Multi-agent workflows
+- React frontend
 
 ---
 
-# 📚 Why Build Without LangChain?
+## 📚 Why I Built Both Versions
 
-Most RAG tutorials rely heavily on LangChain, which abstracts away much of the underlying logic.
+Most tutorials start directly with LangChain.
 
-This project intentionally implements the RAG pipeline manually to gain a deeper understanding of:
+For this project, I first built the RAG pipeline manually to understand the fundamentals.
 
-- Embedding generation
-- Vector indexing
-- Similarity search
-- Retrieval
-- Context construction
-- LLM prompting
+Then I rebuilt the same system using LangChain to understand how framework abstractions improve development speed and maintainability.
 
-A future version of this project will rebuild the same architecture using LangChain to compare abstraction, maintainability, and developer productivity.
+This gave me a clearer understanding of both:
+
+- How RAG works under the hood
+- How modern AI frameworks simplify implementation
 
 ---
 
-# 👨‍💻 Author
+## 👨‍💻 Author
 
 **Kaveesha Abeynayake**
 
-Backend focused Software Engineer transitioning into AI Engineering.
+Backend-focused Software Engineer transitioning into AI Engineering.
 
 Currently exploring:
 
-- Retrieval-Augmented Generation (RAG)
+- Retrieval-Augmented Generation
 - LLM Applications
 - AI Agents
 - Vector Databases
