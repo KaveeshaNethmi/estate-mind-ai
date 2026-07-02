@@ -28,4 +28,13 @@ METADATA_PATH = (
     f"{VECTOR_STORE_DIR}/metadata.json"  # Stores information about each vetor
 )
 
-LANGCHAIN_VECTOR_STORE_PATH = f"{VECTOR_STORE_DIR}/langchain_faiss_index" # Where FAISS stores using Langchain 
+LANGCHAIN_VECTOR_STORE_PATH = (
+    f"{VECTOR_STORE_DIR}/langchain_faiss_index"  # Where FAISS stores using Langchain
+)
+
+# Pinecone
+PINECONE_API_KEY = get_env("PINECONE_API_KEY")
+PINECONE_INDEX_NAME = get_env("PINECONE_INDEX_NAME")
+
+PINECONE_CLOUD = get_env("PINECONE_CLOUD")
+PINECONE_REGION = get_env("PINECONE_REGION")
