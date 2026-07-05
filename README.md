@@ -672,23 +672,28 @@ This project will continue to evolve as I explore more advanced AI engineering c
 
 - ✅ Conversational Memory
 - ✅ Conversation History
-- ✅ Advanced Multi-turn Chat
+- ✅ State-aware Chat Retrieval
 
-### Phase 3
+### Phase 3 🚧 (Next)
 
-- ⏳ Reranking Models
-- ⏳ Source Citations
-- ⏳ Confidence Scores
+- ⏳ Natural Language Filter Extraction
+- ⏳ Advanced Multi-turn Chat
 - ⏳ Query Rewriting
 
 ### Phase 4
+
+- ⏳ Source Citations
+- ⏳ Reranking Models
+- ⏳ Confidence Scores
+
+### Phase 5
 
 - ⏳ Streaming Responses
 - ⏳ Background Indexing Jobs
 - ⏳ Incremental Data Ingestion
 - ⏳ Async Processing
 
-### Phase 5
+### Phase 6
 
 - ⏳ Authentication & Authorization
 - ⏳ React Frontend
