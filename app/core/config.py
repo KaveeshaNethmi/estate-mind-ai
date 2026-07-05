@@ -18,6 +18,7 @@ OPENAI_API_KEY = get_env("OPENAI_API_KEY")
 MONGO_URI = get_env("MONGO_URI")
 DB_NAME = get_env("DB_NAME")
 COLLECTION_NAME = get_env("COLLECTION_NAME")
+CONVERSATION_COLLECTION_NAME = "conversations"
 
 # Define paths od vector store
 VECTOR_STORE_DIR = "vector_store"

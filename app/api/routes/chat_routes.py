@@ -36,6 +36,7 @@ def chat_with_pinecone(request: ChatRequest):
     return generate_pinecone_answer(
         question=request.question,
         top_k=request.top_k,
+        conversation_id=request.conversation_id,
         city=request.city,
         area=request.area,
         development=request.development,

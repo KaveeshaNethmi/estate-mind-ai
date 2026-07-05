@@ -7,6 +7,8 @@ class ChatRequest(BaseModel):
     question: str
     top_k: int = 5
 
+    conversation_id: Optional[str] = None
+    
     city: Optional[str] = None
     area: Optional[str] = None
     development: Optional[str] = None

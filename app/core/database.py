@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-from app.core.config import COLLECTION_NAME, DB_NAME, MONGO_URI
+from app.core.config import COLLECTION_NAME, CONVERSATION_COLLECTION_NAME, DB_NAME, MONGO_URI
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
@@ -8,3 +8,7 @@ db = client[DB_NAME]
 
 def get_properties_collection():
     return db[COLLECTION_NAME]
+
+def get_conversations_collection():
+    return db[CONVERSATION_COLLECTION_NAME
+              ]
