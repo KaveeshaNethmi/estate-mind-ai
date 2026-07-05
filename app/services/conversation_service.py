@@ -13,6 +13,14 @@ def create_conversation() -> str:
     result = collection.insert_one(
         {
             "messages": [],
+             "search_state": {
+                "city": None,
+                "area": None,
+                "development": None,
+                "property_type": None,
+                "max_price": None,
+                "min_bedrooms": None,
+            },
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc),
         }
@@ -68,3 +76,32 @@ def format_chat_history(messages: list[dict]) -> str:
         formatted.append(f"{role.upper()}: {content}")
 
     return "|\n".join(formatted)
+
+
+def get_conversation(conversation_id: str):
+    collection = get_conversations_collection()
+
+    return collection.find_one({"_id": ObjectId(conversation_id)})
+
+
+def get_search_state(conversation_id: str) -> dict:
+    conversation = get_conversation(conversation_id)
+
+    if not conversation:
+        return {}
+
+    return conversation.get("search_state", {})
+
+
+def update_search_state(conversation_id: str, new_state: dict):
+    collection = get_conversations_collection()
+
+    collection.update_one(
+        {"_id": ObjectId(conversation_id)},
+        {
+            "$set": {
+                "search_state": new_state,
+                "updated_at": datetime.now(timezone.utc),
+            }
+        },
+    )

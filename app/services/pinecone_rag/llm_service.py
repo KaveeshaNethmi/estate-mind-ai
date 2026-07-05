@@ -6,10 +6,13 @@ from app.services.conversation_service import (
     create_conversation,
     format_chat_history,
     get_conversation_messages,
+    get_search_state,
+    update_search_state,
 )
 from app.services.pinecone_rag.retrieval_service import (
     retrieve_properties_with_pinecone,
 )
+from app.services.search_state_service import merge_search_state
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -52,18 +55,33 @@ def generate_pinecone_answer(
     if not conversation_id:
         conversation_id = create_conversation()
 
-    previous_messages = get_conversation_messages(conversation_id)
-    chat_history = format_chat_history(previous_messages)
+    current_state = get_search_state(conversation_id)
 
-    retrieved_results = retrieve_properties_with_pinecone(
-        query=question,
-        top_k=top_k,
+    updated_state = merge_search_state(
+        current_state=current_state,
         city=city,
         area=area,
         development=development,
         property_type=property_type,
         max_price=max_price,
         min_bedrooms=min_bedrooms,
+    )
+    print("updated_state", updated_state)
+
+    update_search_state(conversation_id, updated_state)
+
+    previous_messages = get_conversation_messages(conversation_id)
+    chat_history = format_chat_history(previous_messages)
+
+    retrieved_results = retrieve_properties_with_pinecone(
+        query=question,
+        top_k=top_k,
+        city=updated_state.get("city"),
+        area=updated_state.get("area"),
+        development=updated_state.get("development"),
+        property_type=updated_state.get("property_type"),
+        max_price=updated_state.get("max_price"),
+        min_bedrooms=updated_state.get("min_bedrooms"),
     )
 
     context = build_pinecone_context(retrieved_results)
@@ -105,6 +123,7 @@ User Question:
 
     return {
         "conversation_id": conversation_id,
+        "search_state": updated_state,
         "answer": answer,
         "sources": retrieved_results,
     }

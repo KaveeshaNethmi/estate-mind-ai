@@ -274,6 +274,7 @@ estate-mind-ai/
 │   │
 │   ├── services/
 │   │   ├── property_formatter.py
+│   │   ├── search_state_service.py
 │   │   │
 │   │   ├── manual_rag/
 │   │   │   ├── embedding_service.py
@@ -667,11 +668,11 @@ This project will continue to evolve as I explore more advanced AI engineering c
 - ✅ FastAPI REST API
 - ✅ Metadata Filtering
 
-### Phase 2 🚧 (In Progress)
+### Phase 2 ✅ (Completed)
 
 - ✅ Conversational Memory
 - ✅ Conversation History
-- ⏳ Advanced Multi-turn Chat
+- ✅ Advanced Multi-turn Chat
 
 ### Phase 3
 
