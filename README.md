@@ -669,9 +669,9 @@ This project will continue to evolve as I explore more advanced AI engineering c
 
 ### Phase 2 🚧 (In Progress)
 
-- ⏳ Conversational Memory
-- ⏳ Multi-turn Chat
-- ⏳ Conversation History
+- ✅ Conversational Memory
+- ✅ Conversation History
+- ⏳ Advanced Multi-turn Chat
 
 ### Phase 3
 
