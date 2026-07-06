@@ -14,6 +14,7 @@ def get_env(name: str) -> str:
 
 
 OPENAI_API_KEY = get_env("OPENAI_API_KEY")
+CHAT_MODEL = "gpt-4.1-mini"
 
 MONGO_URI = get_env("MONGO_URI")
 DB_NAME = get_env("DB_NAME")

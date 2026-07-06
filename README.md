@@ -275,6 +275,7 @@ estate-mind-ai/
 │   ├── services/
 │   │   ├── property_formatter.py
 │   │   ├── search_state_service.py
+│   │   ├── filter_extraction_service.py
 │   │   │
 │   │   ├── manual_rag/
 │   │   │   ├── embedding_service.py
@@ -300,6 +301,7 @@ estate-mind-ai/
 │   ├── build_pinecone_index.py
 │   ├── test_manual_retrieval.py
 │   └── test_langchain_retrieval.py
+│   └── test_filter_extraction.py
 │
 ├── vector_store/
 │   └── .gitkeep
@@ -676,7 +678,7 @@ This project will continue to evolve as I explore more advanced AI engineering c
 
 ### Phase 3 🚧 (Next)
 
-- ⏳ Natural Language Filter Extraction
+- ✅ Natural Language Filter Extraction
 - ⏳ Advanced Multi-turn Chat
 - ⏳ Query Rewriting
 

@@ -8,12 +8,11 @@ from app.core.database import get_conversations_collection
 
 def create_conversation() -> str:
     collection = get_conversations_collection()
-    print("collection", collection)
 
     result = collection.insert_one(
         {
             "messages": [],
-             "search_state": {
+            "search_state": {
                 "city": None,
                 "area": None,
                 "development": None,
@@ -25,7 +24,6 @@ def create_conversation() -> str:
             "updated_at": datetime.now(timezone.utc),
         }
     )
-    print("result", result)
 
     return str(result.inserted_id)
 

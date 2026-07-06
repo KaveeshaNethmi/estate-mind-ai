@@ -9,6 +9,7 @@ from app.services.conversation_service import (
     get_search_state,
     update_search_state,
 )
+from app.services.filter_extraction_service import extract_filters_from_question
 from app.services.pinecone_rag.retrieval_service import (
     retrieve_properties_with_pinecone,
 )
@@ -57,16 +58,17 @@ def generate_pinecone_answer(
 
     current_state = get_search_state(conversation_id)
 
+    extracted_filters = extract_filters_from_question(question)
+
     updated_state = merge_search_state(
         current_state=current_state,
-        city=city,
-        area=area,
-        development=development,
-        property_type=property_type,
-        max_price=max_price,
-        min_bedrooms=min_bedrooms,
+        city=city or extracted_filters.city,
+        area=area or extracted_filters.area,
+        development=development or extracted_filters.development,
+        property_type=property_type or extracted_filters.property_type,
+        max_price=max_price or extracted_filters.max_price,
+        min_bedrooms=min_bedrooms or extracted_filters.min_bedrooms,
     )
-    print("updated_state", updated_state)
 
     update_search_state(conversation_id, updated_state)
 
