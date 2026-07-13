@@ -13,6 +13,7 @@ from app.services.filter_extraction_service import extract_filters_from_question
 from app.services.pinecone_rag.retrieval_service import (
     retrieve_properties_with_pinecone,
 )
+from app.services.query_rewriting_service import rewrite_query
 from app.services.search_state_service import merge_search_state
 
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -75,8 +76,15 @@ def generate_pinecone_answer(
     previous_messages = get_conversation_messages(conversation_id)
     chat_history = format_chat_history(previous_messages)
 
+    rewritten_query = rewrite_query(
+        question=question,
+        chat_history=chat_history,
+        search_state=updated_state,
+    )
+    print("rewritten_query", rewritten_query)
+
     retrieved_results = retrieve_properties_with_pinecone(
-        query=question,
+        query=rewritten_query,
         top_k=top_k,
         city=updated_state.get("city"),
         area=updated_state.get("area"),
@@ -126,6 +134,8 @@ User Question:
     return {
         "conversation_id": conversation_id,
         "search_state": updated_state,
+         "original_question": question,
+        "rewritten_query": rewritten_query,
         "answer": answer,
         "sources": retrieved_results,
     }
