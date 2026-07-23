@@ -173,8 +173,40 @@ Extended using Pinecone to learn how production AI systems:
 - Retrieval-Augmented Generation (RAG)
 - Context-grounded LLM responses
 - OpenAI embedding generation
-- OpenAI GPT-based answer generation
+- OpenAI GPT-powered answer generation
 - Prompt construction using retrieved property context
+- Conversational AI for real estate search
+- Multi-turn property conversations
+- Natural language query rewriting
+- Natural language filter extraction
+- Entity-aware property referencing
+
+---
+
+### 💬 Conversational AI Features
+
+The assistant maintains conversation context across multiple turns and understands follow-up questions naturally.
+
+Examples:
+
+- Show me apartments in Meydan.
+- Compare the first two.
+- Which one is cheaper?
+- What is its ROI?
+- Compare the first three again.
+- Show me villas instead.
+
+Supported capabilities:
+
+- Conversation history
+- Search state persistence
+- Query rewriting
+- Follow-up question understanding
+- Entity reference resolution
+- Property comparison
+- Context-aware property selection
+
+---
 
 ### 🔎 Retrieval Features
 
@@ -183,7 +215,10 @@ Extended using Pinecone to learn how production AI systems:
 - Manual FAISS vector search
 - LangChain FAISS VectorStore retrieval
 - Pinecone cloud vector search
+- Hybrid semantic + metadata search
 - Metadata-based filtering
+
+---
 
 ### 🏠 Real Estate Copilot Features
 
@@ -195,6 +230,12 @@ Users can ask questions such as:
 - Compare similar properties.
 - Show apartments under a specific budget.
 - Find apartments in a specific development or area.
+- Compare the first two properties.
+- Which one has the better rental yield?
+- Tell me more about the second property.
+- Show similar apartments.
+
+---
 
 ### 📊 Hybrid Search Filters
 
@@ -209,11 +250,13 @@ Supported filters include:
 - Maximum Price
 - Minimum Bedrooms
 
+---
+
 ### 🧠 Manual RAG Pipeline
 
-The manual implementation was built to understand the complete RAG flow without relying on framework abstractions.
+Built from scratch to understand every stage of Retrieval-Augmented Generation without framework abstractions.
 
-It includes:
+Includes:
 
 - Property-to-text conversion
 - Embedding generation
@@ -223,37 +266,44 @@ It includes:
 - Context construction
 - LLM response generation
 
+---
+
 ### 🔗 LangChain RAG Pipeline
 
-The LangChain version uses:
+Built using LangChain components including:
 
-- LangChain `Document`
-- `OpenAIEmbeddings`
-- LangChain FAISS VectorStore
-- `ChatPromptTemplate`
-- `ChatOpenAI`
-- Runnable chain execution
+- LangChain Documents
+- OpenAIEmbeddings
+- FAISS VectorStore
+- ChatPromptTemplate
+- ChatOpenAI
+- Runnable Chains
+
+---
 
 ### ☁️ Pinecone RAG Pipeline
 
-The Pinecone version uses:
+Production-ready cloud vector search using Pinecone.
+
+Includes:
 
 - Pinecone cloud vector database
-- OpenAI-generated embeddings
-- Vector upsert with metadata
-- Namespace-based property indexing
-- Pinecone similarity search
-- Pinecone metadata filtering
+- OpenAI embeddings
+- Namespace-based indexing
+- Metadata filtering
+- Semantic similarity search
+- Hybrid retrieval
+
+---
 
 ### ⚙️ Backend Features
 
 - FastAPI REST API
-- Swagger UI documentation
-- Environment-based configuration
+- Swagger/OpenAPI documentation
 - MongoDB integration
-- Modular service structure
-- Separate manual, LangChain, and Pinecone implementations
----
+- Environment-based configuration
+- Modular service-oriented architecture
+- Separate Manual RAG, LangChain, and Pinecone implementations
 
 # 📂 Project Structure
 
@@ -276,6 +326,7 @@ estate-mind-ai/
 │   │   ├── property_formatter.py
 │   │   ├── search_state_service.py
 │   │   ├── filter_extraction_service.py
+│   │   ├── entity_reference_service.py
 │   │   │
 │   │   ├── manual_rag/
 │   │   │   ├── embedding_service.py
@@ -302,6 +353,7 @@ estate-mind-ai/
 │   ├── test_manual_retrieval.py
 │   └── test_langchain_retrieval.py
 │   └── test_filter_extraction.py
+│   └── test_entity_reference.py
 │
 ├── vector_store/
 │   └── .gitkeep
@@ -676,11 +728,12 @@ This project will continue to evolve as I explore more advanced AI engineering c
 - ✅ Conversation History
 - ✅ State-aware Chat Retrieval
 
-### Phase 3 🚧 (Next)
+### Phase 3 🚧 (Completed)
 
 - ✅ Natural Language Filter Extraction
-- ⏳ Advanced Multi-turn Chat
-- ⏳ Query Rewriting
+- ✅ Query Rewriting
+- ✅ Advanced Multi-turn Chat
+- ✅ Entity-aware Property Tracking
 
 ### Phase 4
 

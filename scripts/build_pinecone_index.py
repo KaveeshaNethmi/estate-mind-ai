@@ -1,3 +1,4 @@
+from decimal import Decimal
 import os
 import sys
 from typing import Any
@@ -25,8 +26,26 @@ def safe_metadata_value(value: Any):
     return str(value)
 
 
+def to_numeric(value: Any) -> float | None:
+    if value is None or value == "":
+        return None
+
+    if isinstance(value, Decimal):
+        return float(value)
+
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def build_metadata(property_data, semantic_text: str):
     property_id = str(property_data.get("_id"))
+
+    raw_rental_yield = to_numeric(property_data.get("rental_yield"))
+    rental_yield_percent = (
+        raw_rental_yield * 100 if raw_rental_yield is not None else None
+    )
 
     return {
         "property_id": property_id,
@@ -38,6 +57,8 @@ def build_metadata(property_data, semantic_text: str):
         "price": safe_metadata_value(property_data.get("asking_price")),
         "bedrooms": safe_metadata_value(property_data.get("bedrooms_total")),
         "bathrooms": safe_metadata_value(property_data.get("bathrooms_total")),
+        "rental_yield": rental_yield_percent or 0,
+        "roi_15": to_numeric(property_data.get("roi_15")) or 0,
         "semantic_text": semantic_text,
     }
 

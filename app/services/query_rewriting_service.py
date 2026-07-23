@@ -10,8 +10,6 @@ def format_search_state(search_state: dict) -> str:
         f"{key}: {value}" for key, value in search_state.items() if value is not None
     ]
 
-    print("active_filters", active_filters)
-
     if not active_filters:
         return "No active serach filters."
 
