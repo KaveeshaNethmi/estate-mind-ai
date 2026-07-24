@@ -25,6 +25,7 @@ from app.services.pinecone_rag.retrieval_service import (
     retrieve_properties_with_pinecone,
 )
 from app.services.query_rewriting_service import rewrite_query
+from app.services.reranking_service import rerrank_properties
 from app.services.search_state_service import merge_search_state
 
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -216,15 +217,23 @@ def generate_pinecone_answer(
             search_state=updated_state,
         )
 
-        retrieved_results = retrieve_properties_with_pinecone(
+        candidate_count = max(top_k * 3, 15)
+
+        pinecone_results = retrieve_properties_with_pinecone(
             query=rewritten_query,
-            top_k=top_k,
+            top_k=candidate_count,
             city=updated_state.get("city"),
             area=updated_state.get("area"),
             development=updated_state.get("development"),
             property_type=updated_state.get("property_type"),
             max_price=updated_state.get("max_price"),
             min_bedrooms=updated_state.get("min_bedrooms"),
+        )
+
+        retrieved_results = rerrank_properties(
+            question=question,
+            results=pinecone_results,
+            top_n=top_k
         )
 
         # This is a genuine Pinecone search, so replace the full result

@@ -321,12 +321,16 @@ estate-mind-ai/
 │   │
 │   ├── schemas/
 │   │   └── chat_schema.py
+│   │   └── entity_reference_schema.py
+│   │   └── filter_schema.py
+│   │   └── reranking_schema.py
 │   │
 │   ├── services/
 │   │   ├── property_formatter.py
 │   │   ├── search_state_service.py
 │   │   ├── filter_extraction_service.py
 │   │   ├── entity_reference_service.py
+│   │   ├── reranking_service.py
 │   │   │
 │   │   ├── manual_rag/
 │   │   │   ├── embedding_service.py
@@ -728,17 +732,17 @@ This project will continue to evolve as I explore more advanced AI engineering c
 - ✅ Conversation History
 - ✅ State-aware Chat Retrieval
 
-### Phase 3 🚧 (Completed)
+### Phase 3 ✅ (Completed)
 
 - ✅ Natural Language Filter Extraction
 - ✅ Query Rewriting
 - ✅ Advanced Multi-turn Chat
 - ✅ Entity-aware Property Tracking
 
-### Phase 4
+### Phase 4 🚧 (In progress)
 
+- ✅ Reranking Models
 - ⏳ Source Citations
-- ⏳ Reranking Models
 - ⏳ Confidence Scores
 
 ### Phase 5
