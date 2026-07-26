@@ -1,6 +1,12 @@
 from openai import OpenAI
 
 from app.core.config import CHAT_MODEL, OPENAI_API_KEY
+from app.services.citation_service import (
+    add_citation_ids,
+    build_citation_context,
+    extract_citations,
+    remove_invalid_citations,
+)
 from app.services.conversation_service import (
     add_message,
     create_conversation,
@@ -25,7 +31,7 @@ from app.services.pinecone_rag.retrieval_service import (
     retrieve_properties_with_pinecone,
 )
 from app.services.query_rewriting_service import rewrite_query
-from app.services.reranking_service import rerrank_properties
+from app.services.reranking_service import rerank_properties
 from app.services.search_state_service import merge_search_state
 
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -41,8 +47,7 @@ def build_pinecone_context(results: list[dict]) -> str:
     for result in results:
         property_data = result.get("property", {})
 
-        context_parts.append(
-            f"""
+        context_parts.append(f"""
 Property {result.get("rank")}:
 Property ID: {property_data.get("property_id")}
 Name: {property_data.get("property_name")}
@@ -58,8 +63,7 @@ ROI: {property_data.get("roi_15")}
 
 Details:
 {property_data.get("semantic_text")}
-""".strip()
-        )
+""".strip())
 
     return "\n\n".join(context_parts)
 
@@ -102,9 +106,7 @@ def generate_pinecone_answer(
     print("CURRENT SELECTION:", len(current_selection))
     print(
         "FOCUSED PROPERTY:",
-        focused_property.get("property_id")
-        if focused_property
-        else None,
+        focused_property.get("property_id") if focused_property else None,
     )
 
     # ------------------------------------------------------------------
@@ -149,41 +151,31 @@ def generate_pinecone_answer(
             entity_reference.model_dump(),
         )
 
+    final_results: list[dict]
+
     # ------------------------------------------------------------------
-    # 4. Run a new retrieval only when previous results are not reused
+    # 4. Reuse previous results or perform a new search
     # ------------------------------------------------------------------
 
     if reused_previous_results:
         rewritten_query = question
-        retrieved_results = referenced_results
+        final_results = referenced_results
 
-        # Only update the conversational selection.
-        # Do not overwrite the full search result set.
         save_current_selection(
             conversation_id=conversation_id,
-            selected_results=retrieved_results,
+            selected_results=final_results,
         )
 
         updated_state = get_search_state(conversation_id)
 
     else:
-        # Extract filters only for a new property search.
         extracted_filters = extract_filters_from_question(question)
-
         current_state = get_search_state(conversation_id)
 
         updated_state = merge_search_state(
             current_state=current_state,
-            city=(
-                city
-                if city is not None
-                else extracted_filters.city
-            ),
-            area=(
-                area
-                if area is not None
-                else extracted_filters.area
-            ),
+            city=(city if city is not None else extracted_filters.city),
+            area=(area if area is not None else extracted_filters.area),
             development=(
                 development
                 if development is not None
@@ -195,9 +187,7 @@ def generate_pinecone_answer(
                 else extracted_filters.property_type
             ),
             max_price=(
-                max_price
-                if max_price is not None
-                else extracted_filters.max_price
+                max_price if max_price is not None else extracted_filters.max_price
             ),
             min_bedrooms=(
                 min_bedrooms
@@ -230,24 +220,29 @@ def generate_pinecone_answer(
             min_bedrooms=updated_state.get("min_bedrooms"),
         )
 
-        retrieved_results = rerrank_properties(
+        final_results = rerank_properties(
             question=question,
             results=pinecone_results,
-            top_n=top_k
+            top_n=top_k,
         )
 
-        # This is a genuine Pinecone search, so replace the full result
-        # set and reset the conversational selection.
         save_last_search_results(
             conversation_id=conversation_id,
-            retrieved_results=retrieved_results,
+            retrieved_results=final_results,
         )
 
     # ------------------------------------------------------------------
-    # 5. Build context and generate the answer
+    # 5. Add citations and build context
     # ------------------------------------------------------------------
 
-    context = build_pinecone_context(retrieved_results)
+    cited_results = add_citation_ids(final_results)
+
+    context = build_citation_context(cited_results)
+
+
+    # ------------------------------------------------------------------
+    # 6. Generate the answer
+    # ------------------------------------------------------------------
 
     response = client.chat.completions.create(
         model=CHAT_MODEL,
@@ -256,8 +251,12 @@ def generate_pinecone_answer(
                 "role": "system",
                 "content": (
                     "You are a helpful real estate AI copilot. "
-                    "Answer only using the supplied property context. "
-                    "Never invent property details."
+                    "Answer only using the supplied property sources. "
+                    "Every factual claim about a property must include "
+                    "the relevant citation in square brackets, such as "
+                    "[1]. An answer about properties without citations "
+                    "is invalid. Never invent property details or "
+                    "citation numbers."
                 ),
             },
             {
@@ -272,17 +271,20 @@ Active Search State:
 Entity Reference:
 {entity_reference.model_dump()}
 
-Property Context:
+Property Sources:
 {context}
 
 Original User Question:
 {question}
 
 Instructions:
-- Answer the original user question.
-- Use only the supplied property context.
-- When comparing properties, clearly label them by their displayed rank.
-- Resolve pronouns and references using the entity-reference data.
+- Answer the original user question directly.
+- Use only the supplied property sources.
+- Cite every property-specific statement.
+- Use only citation numbers shown in the property sources.
+- Place citations immediately after the supported statement.
+- When several sources support one statement, cite each source.
+- When comparing properties, cite every property involved.
 - Do not invent property information.
 - If the required information is unavailable, clearly say so.
 """,
@@ -294,12 +296,23 @@ Instructions:
     answer = response.choices[0].message.content
 
     if answer is None:
-        answer = (
-            "I do not have enough information to answer that question."
-        )
+        answer = "I do not have enough information to answer that question."
+
+    answer = remove_invalid_citations(
+        answer=answer,
+        results=cited_results,
+    )
+
+    citations = extract_citations(
+        answer=answer,
+        results=cited_results,
+    )
+
+    print("ANSWER:", answer)
+    print("CITATIONS:", citations)
 
     # ------------------------------------------------------------------
-    # 6. Save conversation messages
+    # 7. Save conversation messages
     # ------------------------------------------------------------------
 
     add_message(
@@ -323,5 +336,6 @@ Instructions:
         "reused_previous_results": reused_previous_results,
         "entity_reference": entity_reference.model_dump(),
         "answer": answer,
-        "sources": retrieved_results,
+        "citations": citations,
+        "sources": cited_results,
     }

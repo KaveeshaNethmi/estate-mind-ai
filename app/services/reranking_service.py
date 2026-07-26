@@ -6,7 +6,7 @@ from app.schemas.reranking_schema import RerankingResponse
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def rerrank_properties(
+def rerank_properties(
     question: str, results: list[dict], top_n: int = 5
 ) -> list[dict]:
     """
