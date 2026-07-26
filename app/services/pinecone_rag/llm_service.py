@@ -7,6 +7,7 @@ from app.services.citation_service import (
     extract_citations,
     remove_invalid_citations,
 )
+from app.services.confidence_service import calculate_confidence
 from app.services.conversation_service import (
     add_message,
     create_conversation,
@@ -102,12 +103,12 @@ def generate_pinecone_answer(
     current_selection = get_current_selection(conversation_id)
     focused_property = get_focused_property(conversation_id)
 
-    print("FULL SEARCH RESULTS:", len(search_results))
-    print("CURRENT SELECTION:", len(current_selection))
-    print(
-        "FOCUSED PROPERTY:",
-        focused_property.get("property_id") if focused_property else None,
-    )
+    # print("FULL SEARCH RESULTS:", len(search_results))
+    # print("CURRENT SELECTION:", len(current_selection))
+    # print(
+    #     "FOCUSED PROPERTY:",
+    #     focused_property.get("property_id") if focused_property else None,
+    # )
 
     # ------------------------------------------------------------------
     # 2. Detect whether this is a new search or a property reference
@@ -121,10 +122,10 @@ def generate_pinecone_answer(
         focused_property=focused_property,
     )
 
-    print(
-        "DETECTED ENTITY REFERENCE:",
-        entity_reference.model_dump(),
-    )
+    # print(
+    #     "DETECTED ENTITY REFERENCE:",
+    #     entity_reference.model_dump(),
+    # )
 
     reference_detected = entity_reference.uses_previous_results
 
@@ -239,7 +240,6 @@ def generate_pinecone_answer(
 
     context = build_citation_context(cited_results)
 
-
     # ------------------------------------------------------------------
     # 6. Generate the answer
     # ------------------------------------------------------------------
@@ -308,8 +308,13 @@ Instructions:
         results=cited_results,
     )
 
-    print("ANSWER:", answer)
-    print("CITATIONS:", citations)
+    confidence = calculate_confidence(
+        results=final_results,
+        citations=citations,
+    )
+
+    # print("ANSWER:", answer)
+    # print("CITATIONS:", citations)
 
     # ------------------------------------------------------------------
     # 7. Save conversation messages
@@ -337,5 +342,6 @@ Instructions:
         "entity_reference": entity_reference.model_dump(),
         "answer": answer,
         "citations": citations,
+        "confidence": confidence,
         "sources": cited_results,
     }

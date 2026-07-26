@@ -2,6 +2,7 @@ from openai import OpenAI
 
 from app.core.config import CHAT_MODEL, OPENAI_API_KEY
 from app.schemas.reranking_schema import RerankingResponse
+from app.utils.number_utils import clamp_score
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -101,7 +102,7 @@ Instructions:
             continue
 
         updated_result = original_result.copy()
-        updated_result["rerank_score"] = normalize_score(original_result.get("score"))
+        updated_result["rerank_score"] = clamp_score(original_result.get("score"))
         updated_result["rerank_reason"] = "Fallback score based on Pinecone similarity."
 
         reranked_results.append(updated_result)
@@ -160,7 +161,7 @@ def fallback_rerank(
 
     for result in results:
         updated_result = result.copy()
-        updated_result["rerank_score"] = normalize_score(result.get("score"))
+        updated_result["rerank_score"] = clamp_score(result.get("score"))
         updated_result["rerank_reason"] = "Fallback score based on Pinecone similarity."
 
         fallback_results.append(updated_result)
@@ -176,18 +177,6 @@ def fallback_rerank(
         result["rank"] = index
 
     return selected_results
-
-
-def normalize_score(
-    value: float | int | str | None,
-) -> float:
-    try:
-        numeric_value = float(value) if value is not None else 0.0
-    except (TypeError, ValueError):
-        return 0.0
-
-    return max(0.0, min(1.0, numeric_value))
-
 
 def create_candidate_id(index: int) -> str:
     return f"candidate-{index + 1}"
