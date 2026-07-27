@@ -325,12 +325,17 @@ estate-mind-ai/
 │   │   └── filter_schema.py
 │   │   └── reranking_schema.py
 │   │
+│   ├── utils/
+│   │   ├── number_utils.py
+│   │
 │   ├── services/
 │   │   ├── property_formatter.py
 │   │   ├── search_state_service.py
 │   │   ├── filter_extraction_service.py
 │   │   ├── entity_reference_service.py
 │   │   ├── reranking_service.py
+│   │   ├── citation_service.py
+│   │   ├── confidence_service.py
 │   │   │
 │   │   ├── manual_rag/
 │   │   │   ├── embedding_service.py
@@ -739,11 +744,11 @@ This project will continue to evolve as I explore more advanced AI engineering c
 - ✅ Advanced Multi-turn Chat
 - ✅ Entity-aware Property Tracking
 
-### Phase 4 🚧 (In progress)
+### Phase 4 ✅ (Completed)
 
 - ✅ Reranking Models
-- ⏳ Source Citations
-- ⏳ Confidence Scores
+- ✅ Source Citations
+- ✅ Confidence Scores
 
 ### Phase 5
 
