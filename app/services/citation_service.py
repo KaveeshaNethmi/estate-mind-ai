@@ -58,11 +58,8 @@ def extract_citations(
     """
     Extract valid citation references used in the generated answer.
     """
-    print("answer", answer)
-    print("results", results)
 
     cited_ids = {int(match) for match in CITATION_PATTERN.findall(answer)}
-    print("cited_ids", cited_ids)
 
     citations: list[dict] = []
 

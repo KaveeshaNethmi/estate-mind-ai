@@ -1,6 +1,9 @@
+from typing import AsyncGenerator
+
 from openai import OpenAI
 
 from app.core.config import CHAT_MODEL, OPENAI_API_KEY
+from app.schemas.chat_schema import PreparedChatResponse
 from app.services.citation_service import (
     add_citation_ids,
     build_citation_context,
@@ -17,6 +20,7 @@ from app.services.conversation_service import (
     get_focused_property,
     get_last_search_results,
     get_search_state,
+    save_conversation_messages,
     save_current_selection,
     save_last_search_results,
     update_search_state,
@@ -34,6 +38,11 @@ from app.services.pinecone_rag.retrieval_service import (
 from app.services.query_rewriting_service import rewrite_query
 from app.services.reranking_service import rerank_properties
 from app.services.search_state_service import merge_search_state
+from app.services.streaming_service import format_sse_event
+
+from openai.types.chat import (
+    ChatCompletionMessageParam,
+)
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -69,7 +78,147 @@ Details:
     return "\n\n".join(context_parts)
 
 
-def generate_pinecone_answer(
+def build_answer_messages(
+    prepared: PreparedChatResponse,
+) -> list[ChatCompletionMessageParam]:
+    messages: list[ChatCompletionMessageParam] = [
+        {
+            "role": "system",
+            "content": (
+                "You are a helpful real estate AI copilot. "
+                "Answer only using the supplied property sources. "
+                "Every factual claim about a property must include "
+                "the relevant citation in square brackets, such as "
+                "[1]. An answer about properties without citations "
+                "is invalid. Never invent property details or "
+                "citation numbers."
+            ),
+        },
+        {
+            "role": "user",
+            "content": f"""
+Previous Conversation:
+{prepared.chat_history}
+
+Active Search State:
+{prepared.search_state}
+
+Entity Reference:
+{prepared.entity_reference}
+
+Property Sources:
+{prepared.context}
+
+Original User Question:
+{prepared.question}
+
+Instructions:
+- Answer the original user question directly.
+- Use only the supplied property sources.
+- Cite every property-specific statement.
+- Use only citation numbers shown in the property sources.
+- Place citations immediately after the supported statement.
+- When several sources support one statement, cite each source.
+- When comparing properties, cite every property involved.
+- Do not invent property information.
+- If the required information is unavailable, clearly say so.
+""",
+        },
+    ]
+
+    return messages
+
+
+async def stream_property_answer(
+    prepared: PreparedChatResponse,
+) -> AsyncGenerator[str, None]:
+    yield format_sse_event(
+        event="metadata",
+        data={
+            "conversation_id": (prepared.conversation_id),
+            "rewritten_query": (prepared.rewritten_query),
+            "search_state": (prepared.search_state),
+            "reference_detected": (prepared.reference_detected),
+            "reused_previous_results": (prepared.reused_previous_results),
+        },
+    )
+
+    full_answer_parts: list[str] = []
+
+    try:
+        stream = client.chat.completions.create(
+            model=CHAT_MODEL,
+            messages=build_answer_messages(prepared),
+            temperature=0.2,
+            stream=True,
+        )
+
+        for chunk in stream:
+            token = chunk.choices[0].delta.content
+
+            if not token:
+                continue
+
+            full_answer_parts.append(token)
+
+            yield format_sse_event(
+                event="token",
+                data={"content": token},
+            )
+
+        full_answer = "".join(full_answer_parts)
+
+        if not full_answer:
+            full_answer = "I do not have enough information " "to answer that question."
+
+        full_answer = remove_invalid_citations(
+            answer=full_answer,
+            results=prepared.retrieved_results,
+        )
+
+        citations = extract_citations(
+            answer=full_answer,
+            results=prepared.retrieved_results,
+        )
+
+        confidence = calculate_confidence(
+            results=prepared.retrieved_results,
+            citations=citations,
+        )
+
+        add_message(
+            conversation_id=(prepared.conversation_id),
+            role="user",
+            content=prepared.question,
+        )
+
+        add_message(
+            conversation_id=(prepared.conversation_id),
+            role="assistant",
+            content=full_answer,
+        )
+
+        yield format_sse_event(
+            event="complete",
+            data={
+                "answer": full_answer,
+                "citations": citations,
+                "confidence": confidence,
+                "sources": (prepared.retrieved_results),
+            },
+        )
+
+    except Exception as exc:
+        yield format_sse_event(
+            event="error",
+            data={
+                "message": ("The response could not be " "generated."),
+                "details": str(exc),
+            },
+        )
+
+
+def prepare_chat_response(
     question: str,
     top_k: int = 5,
     conversation_id: str | None = None,
@@ -79,14 +228,22 @@ def generate_pinecone_answer(
     property_type: str | None = None,
     max_price: float | None = None,
     min_bedrooms: int | None = None,
-) -> dict:
+) -> PreparedChatResponse:
     """
-    Generate an entity-aware conversational real-estate answer.
+    Prepare an entity-aware conversational real-estate response.
 
-    A new search replaces the stored full search results.
+    This function:
+    - creates or loads the conversation
+    - loads previous messages and retrieval state
+    - detects and resolves property references
+    - extracts and merges search filters
+    - rewrites the query
+    - retrieves and reranks properties
+    - saves retrieval state
+    - assigns citation IDs
+    - builds the property context
 
-    A follow-up reference reuses the stored results and updates only the
-    current selection.
+    It does not generate or save the final assistant answer.
     """
 
     if not conversation_id:
@@ -97,21 +254,17 @@ def generate_pinecone_answer(
     # ------------------------------------------------------------------
 
     previous_messages = get_conversation_messages(conversation_id)
+
     chat_history = format_chat_history(previous_messages)
 
     search_results = get_last_search_results(conversation_id)
+
     current_selection = get_current_selection(conversation_id)
+
     focused_property = get_focused_property(conversation_id)
 
-    # print("FULL SEARCH RESULTS:", len(search_results))
-    # print("CURRENT SELECTION:", len(current_selection))
-    # print(
-    #     "FOCUSED PROPERTY:",
-    #     focused_property.get("property_id") if focused_property else None,
-    # )
-
     # ------------------------------------------------------------------
-    # 2. Detect whether this is a new search or a property reference
+    # 2. Detect whether this is a new search or property reference
     # ------------------------------------------------------------------
 
     entity_reference = detect_entity_reference(
@@ -121,11 +274,6 @@ def generate_pinecone_answer(
         current_selection=current_selection,
         focused_property=focused_property,
     )
-
-    # print(
-    #     "DETECTED ENTITY REFERENCE:",
-    #     entity_reference.model_dump(),
-    # )
 
     reference_detected = entity_reference.uses_previous_results
 
@@ -147,8 +295,8 @@ def generate_pinecone_answer(
 
     if reference_detected and not referenced_results:
         print(
-            "Entity reference was detected, but no matching properties "
-            "could be resolved:",
+            "Entity reference was detected, but no matching "
+            "properties could be resolved:",
             entity_reference.model_dump(),
         )
 
@@ -171,6 +319,7 @@ def generate_pinecone_answer(
 
     else:
         extracted_filters = extract_filters_from_question(question)
+
         current_state = get_search_state(conversation_id)
 
         updated_state = merge_search_state(
@@ -208,7 +357,10 @@ def generate_pinecone_answer(
             search_state=updated_state,
         )
 
-        candidate_count = max(top_k * 3, 15)
+        candidate_count = max(
+            top_k * 3,
+            15,
+        )
 
         pinecone_results = retrieve_properties_with_pinecone(
             query=rewritten_query,
@@ -241,107 +393,99 @@ def generate_pinecone_answer(
     context = build_citation_context(cited_results)
 
     # ------------------------------------------------------------------
-    # 6. Generate the answer
+    # 6. Return prepared data
     # ------------------------------------------------------------------
+
+    return PreparedChatResponse(
+        conversation_id=conversation_id,
+        question=question,
+        rewritten_query=rewritten_query,
+        chat_history=chat_history,
+        search_state=updated_state,
+        retrieved_results=cited_results,
+        context=context,
+        reference_detected=reference_detected,
+        reused_previous_results=reused_previous_results,
+        entity_reference=entity_reference.model_dump(),
+    )
+
+
+def generate_pinecone_answer(
+    question: str,
+    top_k: int = 5,
+    conversation_id: str | None = None,
+    city: str | None = None,
+    area: str | None = None,
+    development: str | None = None,
+    property_type: str | None = None,
+    max_price: float | None = None,
+    min_bedrooms: int | None = None,
+) -> dict:
+    """
+    Generate a non-streaming entity-aware conversational
+    real-estate answer.
+    """
+
+    prepared = prepare_chat_response(
+        question=question,
+        top_k=top_k,
+        conversation_id=conversation_id,
+        city=city,
+        area=area,
+        development=development,
+        property_type=property_type,
+        max_price=max_price,
+        min_bedrooms=min_bedrooms,
+    )
 
     response = client.chat.completions.create(
         model=CHAT_MODEL,
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are a helpful real estate AI copilot. "
-                    "Answer only using the supplied property sources. "
-                    "Every factual claim about a property must include "
-                    "the relevant citation in square brackets, such as "
-                    "[1]. An answer about properties without citations "
-                    "is invalid. Never invent property details or "
-                    "citation numbers."
-                ),
-            },
-            {
-                "role": "user",
-                "content": f"""
-Previous Conversation:
-{chat_history}
-
-Active Search State:
-{updated_state}
-
-Entity Reference:
-{entity_reference.model_dump()}
-
-Property Sources:
-{context}
-
-Original User Question:
-{question}
-
-Instructions:
-- Answer the original user question directly.
-- Use only the supplied property sources.
-- Cite every property-specific statement.
-- Use only citation numbers shown in the property sources.
-- Place citations immediately after the supported statement.
-- When several sources support one statement, cite each source.
-- When comparing properties, cite every property involved.
-- Do not invent property information.
-- If the required information is unavailable, clearly say so.
-""",
-            },
-        ],
+        messages=build_answer_messages(prepared),
         temperature=0.2,
     )
 
     answer = response.choices[0].message.content
 
     if answer is None:
-        answer = "I do not have enough information to answer that question."
+        answer = "I do not have enough information to answer " "that question."
 
     answer = remove_invalid_citations(
         answer=answer,
-        results=cited_results,
+        results=prepared.retrieved_results,
     )
 
     citations = extract_citations(
         answer=answer,
-        results=cited_results,
+        results=prepared.retrieved_results,
     )
 
     confidence = calculate_confidence(
-        results=final_results,
+        results=prepared.retrieved_results,
         citations=citations,
     )
 
-    # print("ANSWER:", answer)
-    # print("CITATIONS:", citations)
-
-    # ------------------------------------------------------------------
-    # 7. Save conversation messages
-    # ------------------------------------------------------------------
-
     add_message(
-        conversation_id=conversation_id,
+        conversation_id=prepared.conversation_id,
         role="user",
-        content=question,
+        content=prepared.question,
     )
 
     add_message(
-        conversation_id=conversation_id,
+        conversation_id=prepared.conversation_id,
         role="assistant",
         content=answer,
     )
 
     return {
-        "conversation_id": conversation_id,
-        "search_state": updated_state,
-        "original_question": question,
-        "rewritten_query": rewritten_query,
-        "reference_detected": reference_detected,
-        "reused_previous_results": reused_previous_results,
-        "entity_reference": entity_reference.model_dump(),
+        "conversation_id": (prepared.conversation_id),
+        "search_state": prepared.search_state,
+        "original_question": prepared.question,
+        "rewritten_query": (prepared.rewritten_query),
+        "reference_detected": (prepared.reference_detected),
+        "reused_previous_results": (prepared.reused_previous_results),
+        "entity_reference": (prepared.entity_reference),
         "answer": answer,
         "citations": citations,
         "confidence": confidence,
-        "sources": cited_results,
+        "sources": prepared.retrieved_results,
     }

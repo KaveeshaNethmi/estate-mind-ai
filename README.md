@@ -336,6 +336,7 @@ estate-mind-ai/
 │   │   ├── reranking_service.py
 │   │   ├── citation_service.py
 │   │   ├── confidence_service.py
+│   │   ├── streaming_service
 │   │   │
 │   │   ├── manual_rag/
 │   │   │   ├── embedding_service.py
@@ -752,7 +753,7 @@ This project will continue to evolve as I explore more advanced AI engineering c
 
 ### Phase 5
 
-- ⏳ Streaming Responses
+- ✅ Streaming Responses
 - ⏳ Background Indexing Jobs
 - ⏳ Incremental Data Ingestion
 - ⏳ Async Processing

@@ -97,9 +97,7 @@ def format_chat_history(
         role = message.get("role", "unknown")
         content = message.get("content", "")
 
-        formatted_messages.append(
-            f"{role.upper()}: {content}"
-        )
+        formatted_messages.append(f"{role.upper()}: {content}")
 
     return "\n".join(formatted_messages)
 
@@ -182,9 +180,7 @@ def save_last_search_results(
 
     collection = get_conversations_collection()
 
-    stored_properties = serialize_retrieved_properties(
-        retrieved_results
-    )
+    stored_properties = serialize_retrieved_properties(retrieved_results)
 
     collection.update_one(
         {"_id": ObjectId(conversation_id)},
@@ -222,15 +218,9 @@ def save_current_selection(
 
     collection = get_conversations_collection()
 
-    stored_properties = serialize_retrieved_properties(
-        selected_results
-    )
+    stored_properties = serialize_retrieved_properties(selected_results)
 
-    focused_property = (
-        stored_properties[0]
-        if len(stored_properties) == 1
-        else None
-    )
+    focused_property = stored_properties[0] if len(stored_properties) == 1 else None
 
     collection.update_one(
         {"_id": ObjectId(conversation_id)},
@@ -274,3 +264,47 @@ def get_focused_property(
         return None
 
     return conversation.get("focused_property")
+
+
+def save_conversation_messages(
+    conversation_id: str,
+    user_message: str,
+    assistant_message: str,
+) -> None:
+    """
+    Save one completed user-assistant conversation turn.
+
+    This should only be called after the full assistant response
+    has been generated successfully.
+    """
+
+    collection = get_conversations_collection()
+
+    timestamp = datetime.now(timezone.utc)
+
+    messages = [
+        {
+            "role": "user",
+            "content": user_message,
+            "created_at": timestamp,
+        },
+        {
+            "role": "assistant",
+            "content": assistant_message,
+            "created_at": timestamp,
+        },
+    ]
+
+    collection.update_one(
+        {"_id": ObjectId(conversation_id)},
+        {
+            "$push": {
+                "messages": {
+                    "$each": messages,
+                }
+            },
+            "$set": {
+                "updated_at": timestamp,
+            },
+        },
+    )
