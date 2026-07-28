@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
 
 from app.schemas.chat_schema import ChatRequest
@@ -50,9 +51,17 @@ def chat_with_pinecone(request: ChatRequest):
 async def stream_chat(
     request: ChatRequest,
 ) -> StreamingResponse:
-    prepared = prepare_chat_response(
+    prepared = await run_in_threadpool(
+        prepare_chat_response,
         question=request.question,
+        top_k=request.top_k,
         conversation_id=request.conversation_id,
+        city=request.city,
+        area=request.area,
+        development=request.development,
+        property_type=request.property_type,
+        max_price=request.max_price,
+        min_bedrooms=request.min_bedrooms,
     )
 
     return StreamingResponse(

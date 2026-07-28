@@ -1,6 +1,6 @@
 from typing import AsyncGenerator
 
-from openai import OpenAI
+from openai import AsyncOpenAI, OpenAI
 
 from app.core.config import CHAT_MODEL, OPENAI_API_KEY
 from app.schemas.chat_schema import PreparedChatResponse
@@ -45,6 +45,8 @@ from openai.types.chat import (
 )
 
 client = OpenAI(api_key=OPENAI_API_KEY)
+
+async_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 def build_pinecone_context(results: list[dict]) -> str:
@@ -146,14 +148,14 @@ async def stream_property_answer(
     full_answer_parts: list[str] = []
 
     try:
-        stream = client.chat.completions.create(
+        stream = await async_client.chat.completions.create(
             model=CHAT_MODEL,
             messages=build_answer_messages(prepared),
             temperature=0.2,
             stream=True,
         )
 
-        for chunk in stream:
+        async for chunk in stream:
             token = chunk.choices[0].delta.content
 
             if not token:

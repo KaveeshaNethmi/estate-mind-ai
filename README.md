@@ -754,9 +754,9 @@ This project will continue to evolve as I explore more advanced AI engineering c
 ### Phase 5
 
 - ✅ Streaming Responses
+- ⏳ Async Processing
 - ⏳ Background Indexing Jobs
 - ⏳ Incremental Data Ingestion
-- ⏳ Async Processing
 
 ### Phase 6
 
