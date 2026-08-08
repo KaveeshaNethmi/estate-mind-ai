@@ -1,7 +1,4 @@
-import {
-  Building2,
-  ChartNoAxesCombined,
-} from "lucide-react";
+import { Building2, ChartNoAxesCombined } from "lucide-react";
 import type { AssistantMode } from "../../types/assistantMode";
 
 interface WelcomeSectionProps {
@@ -31,18 +28,20 @@ const welcomeContent: Record<
   },
 };
 
-export const WelcomeSection = ({
-  activeMode,
-}: WelcomeSectionProps) => {
+export const WelcomeSection = ({ activeMode }: WelcomeSectionProps) => {
   const content = welcomeContent[activeMode];
   const Icon =
-    activeMode === "market-insights"
-      ? Building2
-      : ChartNoAxesCombined;
+    activeMode === "market-insights" ? Building2 : ChartNoAxesCombined;
 
   return (
     <section className="mx-auto w-full max-w-3xl text-center">
-      <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-card bg-primary-light text-primary shadow-card">
+      <div
+        className="
+    mx-auto mb-4 flex size-10 items-center justify-center
+    rounded-card bg-primary-light text-primary shadow-card
+    sm:mb-5 sm:size-12
+  "
+      >
         <Icon size={24} />
       </div>
 
@@ -50,13 +49,25 @@ export const WelcomeSection = ({
         {content.eyebrow}
       </p>
 
-      <h1 className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]">
+      <h1
+        className="
+    text-2xl font-bold tracking-tight text-text-primary
+    sm:text-3xl
+    lg:text-[2.75rem] lg:leading-[1.08]
+  "
+      >
         {content.title}
       </h1>
 
-      <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-text-secondary sm:text-base">
+      <p
+        className="
+    mx-auto mt-3 max-w-2xl
+    text-sm leading-6 text-text-secondary
+    sm:mt-4 sm:text-base
+  "
+      >
         {content.description}
       </p>
     </section>
   );
-}
+};

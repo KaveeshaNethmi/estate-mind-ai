@@ -8,6 +8,7 @@ import { TopNavigation } from "../components/layout/TopNavigation";
 import { MarketPulsePanel } from "../components/market/MarketPulsePanel";
 import { homeSuggestions } from "../data/homeSuggestions";
 import type { AssistantMode } from "../types/assistantMode";
+import { MobileModeTabs } from "../components/layout/MobileModeTabs";
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -29,10 +30,10 @@ export const HomePage = () => {
   return (
     <PageShell
       header={
-        <TopNavigation
-          activeMode={activeMode}
-          onModeChange={setActiveMode}
-        />
+        <TopNavigation activeMode={activeMode} onModeChange={setActiveMode} />
+      }
+      mobileSubHeader={
+        <MobileModeTabs activeMode={activeMode} onModeChange={setActiveMode} />
       }
       rightPanel={<MarketPulsePanel />}
     >
@@ -62,4 +63,4 @@ export const HomePage = () => {
       </div>
     </PageShell>
   );
-}
+};
