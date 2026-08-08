@@ -1,65 +1,101 @@
-# 🏡 EstateMind AI - Real Estate AI Copilot
+# 🏡 EstateMind AI — Real Estate AI Copilot
 
-A production-style **Retrieval-Augmented Generation (RAG)** application that allows users to interact with a real estate property database using natural language.
+EstateMind AI is a production-style **Retrieval-Augmented Generation (RAG)** application for conversational real estate search and investment analysis.
 
-EstateMind AI retrieves relevant property data from a vector database, grounds the response with real property information, and generates context-aware answers using an LLM.
+Users can ask natural-language questions about Dubai properties, compare listings, apply structured filters, explore market insights, and receive answers grounded in retrieved property data.
 
-## 🎯 Project Goal
+The project now includes:
 
-The goal of this project is to understand and compare different ways of building a RAG system:
+- A **FastAPI backend** with Manual RAG, LangChain RAG, and Pinecone implementations
+- A **React + TypeScript frontend** with a responsive dashboard interface
+- Conversational memory, query rewriting, metadata filtering, reranking, citations, confidence scoring, and streaming responses
 
-1. **Manual RAG Implementation**  
-   Built from first principles using OpenAI Embeddings, FAISS, NumPy, and FastAPI.
+---
 
-2. **LangChain RAG Implementation**  
-   Rebuilt using LangChain to understand how AI frameworks simplify RAG development.
+### 🎯 Project Goals
 
-3. **Pinecone RAG Implementation**  
-   Integrated Pinecone as a managed cloud vector database for a more production-style setup.
+EstateMind AI was created to understand how production-style RAG systems evolve from first principles into scalable AI applications.
 
-This project was built step by step to understand both:
+The project compares three retrieval approaches:
 
-- How RAG works under the hood
-- How modern AI frameworks and vector databases improve developer productivity and scalability
+1. **Manual RAG**
+   - Built using OpenAI embeddings, FAISS, NumPy, and FastAPI
+   - Provides full control over indexing, retrieval, filtering, and context construction
+
+2. **LangChain RAG**
+   - Uses LangChain abstractions for documents, embeddings, retrieval, prompts, and LLM orchestration
+
+3. **Pinecone RAG**
+   - Uses a managed cloud vector database for persistent and scalable semantic search
+
+The frontend is being developed as a premium AI real estate copilot for Dubai property discovery and investment analysis.
+
+---
+
+### ✨ Current Product Experience
+
+The current frontend foundation includes:
+
+- Responsive dashboard layout
+- Collapsible left navigation
+- Independent main-content and right-panel scrolling
+- EstateMind AI assistant modes
+  - Market Insights
+  - Investment Analysis
+- Suggested conversational prompts
+- AI property-search input
+- Dubai Market Pulse panel
+- Search results route
+- Property details route
+- Reusable design-system tokens using Tailwind CSS v4
+
+The search-results and property-details screens are currently being implemented.
 
 ---
 
 # 🏗 System Architecture
 
-EstateMind AI follows a Retrieval-Augmented Generation (RAG) architecture where the Large Language Model answers questions using retrieved property data instead of relying only on its pre-trained knowledge.
-
 ```text
-                    ┌──────────────────────┐
-                    │    User Question     │
-                    └──────────┬───────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                         React Frontend                        │
+│  Natural-language search • Market insights • Property UI      │
+└──────────────────────────────┬────────────────────────────────┘
                                │
                                ▼
-                 Generate Query Embedding
+┌───────────────────────────────────────────────────────────────┐
+│                         FastAPI Backend                       │
+│ Chat API • Conversation state • Filters • Streaming           │
+└──────────────────────────────┬────────────────────────────────┘
                                │
                                ▼
-                   Semantic Similarity Search
+                    Query Rewriting & Filtering
                                │
                                ▼
-                Retrieve Relevant Properties
+                       Query Embedding
                                │
                                ▼
-                 Apply Metadata Filtering
+            ┌──────────────────┼──────────────────┐
+            │                  │                  │
+            ▼                  ▼                  ▼
+       Manual FAISS      LangChain FAISS       Pinecone
+            │                  │                  │
+            └──────────────────┴──────────────────┘
                                │
                                ▼
-                Build Context for the LLM
+                   Retrieval and Reranking
                                │
                                ▼
-                    OpenAI GPT-4.1 Mini
+                    Context Construction
                                │
                                ▼
-                      Final AI Response
+                      OpenAI GPT Model
+                               │
+                               ▼
+          Grounded Answer • Sources • Confidence Score
 ```
 
 ---
 
-## 🧠 RAG Implementations
-
-This project contains **three different RAG implementations**, allowing direct comparison between manual development, AI frameworks, and managed vector databases.
 
 | Implementation | Vector Store | Embeddings       | Retrieval           | Purpose                                               |
 |----------------|--------------|------------------|---------------------|-------------------------------------------------------|
@@ -67,236 +103,124 @@ This project contains **three different RAG implementations**, allowing direct c
 | LangChain RAG  | FAISS        | OpenAIEmbeddings | LangChain Retriever | Learn framework-based AI development                  |
 | Pinecone RAG   | Pinecone     | OpenAI           | Pinecone Query API  | Learn production-ready cloud vector search            |
 
+
 ---
 
-## 🔄 End-to-End Workflow
+### 🔄 End-to-End Workflow
 
 ```text
 MongoDB Property Documents
             │
             ▼
-Property Formatter
-(Convert JSON → Semantic Text)
+    Property Formatter
+  (JSON → Semantic Text)
             │
             ▼
-OpenAI Embedding Model
-(text-embedding-3-small)
+      OpenAI Embeddings
+  (text-embedding-3-small)
             │
             ▼
-      ┌──────────────┬──────────────┬──────────────┐
-      │              │              │              |
-      ▼              ▼              ▼              ▼
- Manual FAISS    LangChain FAISS   Pinecone        ?
-      │              │              │
-      └──────────────┴──────────────┘
-                     │
-                     ▼
-          Similarity Search (Top-K)
-                     │
-                     ▼
-         Metadata Filtering (Optional)
-                     │
-                     ▼
-          Context Construction
-                     │
-                     ▼
-             OpenAI GPT-4.1 Mini
-                     │
-                     ▼
-              Final AI Response
+Manual FAISS / LangChain FAISS / Pinecone
+            │
+            ▼
+Semantic Similarity Search
+            │
+            ▼
+    Metadata Filtering
+            │
+            ▼
+        Reranking
+            │
+            ▼
+    Context Construction
+            │
+            ▼
+     OpenAI GPT Model
+            │
+            ▼
+Streaming Grounded Response
 ```
-
----
-
-## 🎯 Why Three Implementations?
-
-Rather than stopping after building a single RAG application, this project intentionally explores three different approaches.
-
-### 1️⃣ Manual RAG
-
-Implemented from scratch to understand:
-
-- Embeddings
-- Vector indexing
-- Similarity search
-- Context construction
-- Prompt engineering
-
-### 2️⃣ LangChain RAG
-
-Rebuilt using LangChain to understand how AI frameworks simplify:
-
-- Document handling
-- Retrieval
-- Prompt orchestration
-- LLM integration
-
-### 3️⃣ Pinecone RAG
-
-Extended using Pinecone to learn how production AI systems:
-
-- Store vectors in the cloud
-- Scale semantic search
-- Share vector indexes across multiple application instances
-- Support enterprise AI applications
-
-# 🛠 Tech Stack
-
-### Backend
-- Python
-- FastAPI
-
-### AI / LLM
-- OpenAI GPT-4.1 Mini
-- OpenAI `text-embedding-3-small`
-
-### Vector Search
-- FAISS
-- LangChain FAISS VectorStore
-
-### Database
-- MongoDB
-
-### Frameworks / Libraries
-- LangChain
-- NumPy
-- PyMongo
-- python-dotenv
-- Pydantic
 
 ---
 
 # 🚀 Features
 
-### 🤖 AI Features
+### 🤖 AI and RAG
 
-- Retrieval-Augmented Generation (RAG)
+- Retrieval-Augmented Generation
 - Context-grounded LLM responses
 - OpenAI embedding generation
-- OpenAI GPT-powered answer generation
-- Prompt construction using retrieved property context
-- Conversational AI for real estate search
-- Multi-turn property conversations
-- Natural language query rewriting
-- Natural language filter extraction
-- Entity-aware property referencing
-
----
-
-### 💬 Conversational AI Features
-
-The assistant maintains conversation context across multiple turns and understands follow-up questions naturally.
-
-Examples:
-
-- Show me apartments in Meydan.
-- Compare the first two.
-- Which one is cheaper?
-- What is its ROI?
-- Compare the first three again.
-- Show me villas instead.
-
-Supported capabilities:
-
-- Conversation history
-- Search state persistence
+- Semantic similarity search
+- Hybrid semantic and metadata retrieval
 - Query rewriting
+- Natural-language filter extraction
+- Reranking
+- Source citations
+- Confidence scores
+- Streaming responses
+
+### 💬 Conversational Intelligence
+
+- Multi-turn conversations
+- Conversation history
+- Search-state persistence
 - Follow-up question understanding
-- Entity reference resolution
-- Property comparison
+- Entity-aware property references
 - Context-aware property selection
+- Property comparison
 
----
+Example conversation:
 
-### 🔎 Retrieval Features
+```text
+Show me apartments in Meydan.
 
-- Natural language semantic property search
-- Top-K similarity search
-- Manual FAISS vector search
-- LangChain FAISS VectorStore retrieval
-- Pinecone cloud vector search
-- Hybrid semantic + metadata search
-- Metadata-based filtering
+Compare the first two.
 
----
+Which one is cheaper?
 
-### 🏠 Real Estate Copilot Features
+What is the ROI of the second one?
 
-Users can ask questions such as:
+Now show me villas instead.
+```
 
-- Show me furnished apartments in Meydan with good rental yield.
-- Which properties have the highest ROI?
-- Recommend investment-friendly apartments.
-- Compare similar properties.
-- Show apartments under a specific budget.
-- Find apartments in a specific development or area.
-- Compare the first two properties.
-- Which one has the better rental yield?
-- Tell me more about the second property.
-- Show similar apartments.
-
----
-
-### 📊 Hybrid Search Filters
-
-Combines semantic search with structured metadata filtering.
+### 🔎 Structured Filters
 
 Supported filters include:
 
 - City
 - Area
 - Development
-- Property Type
-- Maximum Price
-- Minimum Bedrooms
+- Property type
+- Maximum price
+- Minimum bedrooms
 
----
+### 🏠 Real Estate Copilot
 
-### 🧠 Manual RAG Pipeline
+Users can ask questions such as:
 
-Built from scratch to understand every stage of Retrieval-Augmented Generation without framework abstractions.
+- Show me furnished apartments in Meydan with good rental yield.
+- Which areas currently offer the strongest investment potential?
+- Compare Dubai Marina and Downtown Dubai.
+- Show apartments below AED 2 million.
+- Which property has the better ROI?
+- Find family-friendly communities near schools.
+- Recommend luxury villas in Palm Jumeirah.
+- Show similar properties to the second result.
 
-Includes:
+### 🖥 Frontend
 
-- Property-to-text conversion
-- Embedding generation
-- FAISS indexing
-- Metadata storage
-- Similarity search
-- Context construction
-- LLM response generation
+- React + TypeScript
+- Responsive dashboard layout
+- Tailwind CSS v4 design tokens
+- Reusable page shell
+- Left navigation
+- Assistant-mode tabs
+- Suggested prompt cards
+- Dubai Market Pulse panel
+- Property search input
+- Search and property-detail routes
 
----
-
-### 🔗 LangChain RAG Pipeline
-
-Built using LangChain components including:
-
-- LangChain Documents
-- OpenAIEmbeddings
-- FAISS VectorStore
-- ChatPromptTemplate
-- ChatOpenAI
-- Runnable Chains
-
----
-
-### ☁️ Pinecone RAG Pipeline
-
-Production-ready cloud vector search using Pinecone.
-
-Includes:
-
-- Pinecone cloud vector database
-- OpenAI embeddings
-- Namespace-based indexing
-- Metadata filtering
-- Semantic similarity search
-- Hybrid retrieval
-
----
-
-### ⚙️ Backend Features
+### ⚙️ Backend
 
 - FastAPI REST API
 - Swagger/OpenAPI documentation
@@ -304,79 +228,124 @@ Includes:
 - Environment-based configuration
 - Modular service-oriented architecture
 - Separate Manual RAG, LangChain, and Pinecone implementations
+- Async request handling
+- Streaming responses
+
+---
+
+# 🛠 Tech Stack
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- React Router
+- Lucide React
+
+### Backend
+
+- Python
+- FastAPI
+- Pydantic
+- PyMongo
+- python-dotenv
+
+### AI and LLM
+
+- OpenAI GPT
+- OpenAI `text-embedding-3-small`
+- LangChain
+
+### Vector Search
+
+- FAISS
+- LangChain FAISS VectorStore
+- Pinecone
+
+### Database
+
+- MongoDB
+
+---
 
 # 📂 Project Structure
 
 ```text
 estate-mind-ai/
-
-├── app/
-│   ├── api/
-│   │   └── routes/
-│   │       └── chat_routes.py
-│   │
-│   ├── core/
-│   │   ├── config.py
-│   │   └── database.py
-│   │
-│   ├── schemas/
-│   │   └── chat_schema.py
-│   │   └── entity_reference_schema.py
-│   │   └── filter_schema.py
-│   │   └── reranking_schema.py
-│   │
-│   ├── utils/
-│   │   ├── number_utils.py
-│   │
-│   ├── services/
-│   │   ├── property_formatter.py
-│   │   ├── search_state_service.py
-│   │   ├── filter_extraction_service.py
-│   │   ├── entity_reference_service.py
-│   │   ├── reranking_service.py
-│   │   ├── citation_service.py
-│   │   ├── confidence_service.py
-│   │   ├── streaming_service
-│   │   │
-│   │   ├── manual_rag/
-│   │   │   ├── embedding_service.py
-│   │   │   ├── vector_store_service.py
-│   │   │   ├── retrieval_service.py
-│   │   │   └── llm_service.py
-│   │   │
-│   │   ├── langchain_rag/
-│   │   │   ├── vector_store_service.py
-│   │   │   ├── retrieval_service.py
-│   │   │   └── llm_service.py
-│   │   │
-│   │   └── pinecone_rag/
-│   │       ├── vector_store_service.py
-│   │       ├── retrieval_service.py
-│   │       └── llm_service.py
-│   │
-│   └── main.py
 │
-├── scripts/
-│   ├── build_manual_faiss_index.py
-│   ├── build_langchain_faiss_index.py
-│   ├── build_pinecone_index.py
-│   ├── test_manual_retrieval.py
-│   └── test_langchain_retrieval.py
-│   └── test_filter_extraction.py
-│   └── test_entity_reference.py
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   └── router.tsx
+│   │   ├── components/
+│   │   │   ├── chat/
+│   │   │   ├── layout/
+│   │   │   ├── market/
+│   │   │   └── property/
+│   │   ├── data/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── styles/
+│   │   │   └── global.css
+│   │   ├── types/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
 │
-├── vector_store/
-│   └── .gitkeep
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── routes/
+│   │   │       └── chat_routes.py
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   └── database.py
+│   │   ├── schemas/
+│   │   │   ├── chat_schema.py
+│   │   │   ├── entity_reference_schema.py
+│   │   │   ├── filter_schema.py
+│   │   │   └── reranking_schema.py
+│   │   ├── services/
+│   │   │   ├── manual_rag/
+│   │   │   ├── langchain_rag/
+│   │   │   ├── pinecone_rag/
+│   │   │   ├── citation_service.py
+│   │   │   ├── confidence_service.py
+│   │   │   ├── entity_reference_service.py
+│   │   │   ├── filter_extraction_service.py
+│   │   │   ├── property_formatter.py
+│   │   │   ├── reranking_service.py
+│   │   │   ├── search_state_service.py
+│   │   │   └── streaming_service.py
+│   │   └── main.py
+│   ├── scripts/
+│   │   ├── build_manual_faiss_index.py
+│   │   ├── build_langchain_faiss_index.py
+│   │   ├── build_pinecone_index.py
+│   │   ├── test_manual_retrieval.py
+│   │   ├── test_langchain_retrieval.py
+│   │   ├── test_filter_extraction.py
+│   │   └── test_entity_reference.py
+│   ├── vector_store/
+│   │   └── .gitkeep
+│   ├── requirements.txt
+│   └── .env.example
 │
-├── requirements.txt
-├── .env.example
 ├── .gitignore
 └── README.md
-## ⚙️ How It Works
+```
+
+---
+
+# ⚙️ How It Works
 
 ### 1. Property Formatting
 
-Each MongoDB property document is converted into a clean semantic text format.
+Each MongoDB property document is converted into semantic text.
 
 Example:
 
@@ -384,9 +353,7 @@ Example:
 1-bedroom furnished apartment located in Meydan, Dubai.
 
 Price: 1,050,700 AED
-
 Rental Yield: 5.1%
-
 ROI 15 Years: 75.4%
 
 Amenities:
@@ -396,109 +363,81 @@ Public Parking
 Children's Play Area
 ```
 
-This improves retrieval quality because embedding models understand natural language better than raw JSON.
-
----
+This improves retrieval quality because embedding models understand semantic text more effectively than raw JSON.
 
 ### 2. Embedding Generation
 
-The formatted property text is converted into vector embeddings using:
+The formatted property text is converted into embeddings using:
 
 ```text
 text-embedding-3-small
 ```
 
-Each property becomes a numerical vector that represents its meaning.
+Each property becomes a numerical vector representing its semantic meaning.
 
----
+### 3. Vector Indexing
 
-### 3. FAISS Indexing
-
-The embeddings are stored in FAISS for similarity search.
-
-Manual version:
+Manual FAISS:
 
 ```text
-vector_store/
+backend/vector_store/
 ├── properties.index
 └── metadata.json
 ```
 
-LangChain version:
+LangChain FAISS:
 
 ```text
-vector_store/
-└── langchain_faiss_index/
-    ├── index.faiss
-    └── index.pkl
+backend/vector_store/langchain_faiss_index/
+├── index.faiss
+└── index.pkl
 ```
 
-These generated vector files are ignored from Git and can be rebuilt using the scripts.
+Pinecone stores vectors in a managed cloud index.
 
----
+Generated vector files are excluded from Git and can be rebuilt using the indexing scripts.
 
-### 4. Semantic Retrieval
+### 4. Retrieval
 
-When a user asks a question, the system:
+For every question, the backend:
 
-1. Converts the question into an embedding
-2. Searches FAISS for similar property vectors
-3. Retrieves the matching property metadata
-4. Applies structured filters
-5. Sends the retrieved context to the LLM
+1. Rewrites the query when required
+2. Extracts structured filters
+3. Generates a query embedding
+4. Performs semantic search
+5. Applies metadata filters
+6. Reranks retrieved properties
+7. Builds context for the LLM
 
----
+### 5. Response Generation
 
-### 5. AI Response Generation
+The LLM answers using retrieved property context rather than relying only on pre-trained knowledge.
 
-The LLM generates an answer using only the retrieved property context.
+Responses can include:
 
-This helps reduce hallucinations because the model is grounded with real property data.
+- Grounded property recommendations
+- Comparisons
+- Source citations
+- Confidence scores
+- Streaming output
 
 ---
 
 # 📌 API Endpoints
 
-### Manual RAG Chat
+### Manual RAG
 
 ```http
 POST /chat/manual
 ```
 
-Example request:
-
-```json
-{
-  "question": "Show me furnished apartments in Meydan with good rental yield.",
-  "top_k": 5,
-  "development": "Meydan",
-  "property_type": "Apartment",
-  "max_price": 1200000
-}
-```
-
----
-
-### LangChain RAG Chat
+### LangChain RAG
 
 ```http
 POST /chat/langchain
 ```
 
-Example request:
-
-```json
-{
-  "question": "Show me furnished apartments in Meydan with good rental yield.",
-  "top_k": 5,
-  "development": "Meydan",
-  "property_type": "Apartment",
-  "max_price": 1200000
-}
-```
----
-
-### Pinecone RAG Chat
+### Pinecone RAG
 
 ```http
 POST /chat/pinecone
@@ -521,7 +460,8 @@ Example response:
 ```json
 {
   "answer": "...",
-  "sources": [...]
+  "sources": [],
+  "confidence": 0.89
 }
 ```
 
@@ -529,21 +469,21 @@ Example response:
 
 # ▶️ Running the Project
 
-Clone the repository:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/KaveeshaNethmi/estate-mind-ai.git
-
 cd estate-mind-ai
 ```
 
-Create virtual environment:
+### 2. Run the backend
 
 ```bash
+cd backend
 python -m venv venv
 ```
 
-Activate virtual environment:
+Activate the environment on Windows:
 
 ```bash
 venv\Scripts\activate
@@ -555,57 +495,64 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Create `.env` file:
+Create a `.env` file:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
-
 MONGO_URI=mongodb://localhost:27017
-
 DB_NAME=your_database_name
-
 COLLECTION_NAME=your_collection_name
+
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_INDEX_NAME=estate-mind-ai
 ```
 
-Build the manual FAISS index:
+Build the required indexes:
 
 ```bash
 python scripts/build_manual_faiss_index.py
-```
-
-Build the LangChain FAISS index:
-
-```bash
 python scripts/build_langchain_faiss_index.py
-```
-Build the Pinecone index:
-
-```bash
 python scripts/build_pinecone_index.py
 ```
-Start the FastAPI server:
+
+Start FastAPI:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Open Swagger UI:
+Swagger UI:
 
 ```text
 http://localhost:8000/docs
 ```
 
+### 3. Run the frontend
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The Vite development server will display the local frontend URL in the terminal.
+
+### 4. Create a production frontend build
+
+```bash
+cd frontend
+npm run build
+```
+
 ---
 
-# 🧪 Comparing the Three RAG Implementations
+# 🧪 Why Three RAG Implementations?
 
-This project intentionally implements the same RAG pipeline in three different ways to understand the trade-offs between building from first principles, using AI frameworks, and using managed cloud vector databases.
+### Manual RAG
 
-### 🛠 Manual RAG
-
-The manual implementation was built completely from scratch to understand every component of the RAG pipeline.
-
-It provides full control over:
+The manual implementation provides full control over:
 
 - Embedding generation
 - Vector creation
@@ -614,170 +561,150 @@ It provides full control over:
 - Similarity search
 - Context construction
 - Prompt engineering
-- LLM response generation
+- Response generation
 
-This version helped me understand **how Retrieval-Augmented Generation works under the hood** without relying on framework abstractions.
+It demonstrates how RAG works without framework abstractions.
 
----
+### LangChain RAG
 
-### 🔗 LangChain RAG
-
-After completing the manual implementation, I rebuilt the same system using LangChain.
-
-LangChain simplifies development by providing abstractions for:
+LangChain simplifies:
 
 - Document management
 - Embedding generation
-- VectorStore integration
+- Vector-store integration
 - Retrieval
 - Prompt templating
 - LLM orchestration
 
-This implementation helped me understand **how modern AI frameworks accelerate development while hiding much of the underlying complexity**.
+It demonstrates how AI frameworks accelerate development.
 
----
+### Pinecone RAG
 
-### ☁️ Pinecone RAG
-
-The third implementation replaces the local FAISS vector database with **Pinecone**, a managed cloud vector database commonly used in production AI systems.
-
-This implementation demonstrates:
+Pinecone provides:
 
 - Cloud-hosted vector storage
 - Persistent vector indexes
-- Metadata-based filtering
+- Metadata filtering
 - Scalable semantic search
-- Production-style vector retrieval
+- Multi-instance access
 
-This version helped me understand the transition from a **locally hosted RAG system** to a **cloud-native architecture** that can scale across multiple application instances.
-
----
-
-### 📌 Key Takeaways
-
-Building the same project in three different ways gave me a much deeper understanding of modern AI application development.
-
-- **Manual RAG** taught me how every component works internally.
-- **LangChain** showed how frameworks improve developer productivity.
-- **Pinecone** demonstrated how vector databases are managed in production environments.
-
-Rather than learning only a framework, this approach helped me understand the complete evolution of a Retrieval-Augmented Generation system—from first principles to a production-ready architecture.
+It demonstrates how a local RAG pipeline can evolve into a cloud-oriented architecture.
 
 ---
 
-# 📖 What I Learned
+# 📖 Key Learnings
 
-Building EstateMind AI helped me gain hands-on experience in designing and implementing production-style Retrieval-Augmented Generation (RAG) systems from first principles.
+### AI Engineering
 
-### AI & Machine Learning
-
-- Retrieval-Augmented Generation (RAG)
-- OpenAI Embeddings
-- Semantic Search
-- Vector Representations
-- Prompt Engineering
-- Context Grounding
-- Hybrid Retrieval
-- Metadata Filtering
+- Retrieval-Augmented Generation
+- OpenAI embeddings
+- Semantic search
+- Prompt engineering
+- Context grounding
+- Hybrid retrieval
+- Metadata filtering
+- Conversational state
+- Reranking
+- Source citation
+- Confidence scoring
+- Streaming responses
 
 ### Vector Databases
 
 - FAISS
 - Pinecone
-- Similarity Search
-- Nearest-Neighbor Search
-- Vector Indexing
-- Cloud Vector Databases
+- Similarity search
+- Nearest-neighbour retrieval
+- Vector indexing
+- Cloud vector databases
 
-### AI Frameworks
+### Frontend Engineering
 
-- LangChain
-- Document Management
-- VectorStore Integration
-- Prompt Templates
-- Runnable Chains
+- React and TypeScript
+- Vite
+- Tailwind CSS v4
+- Responsive dashboard architecture
+- Reusable component design
+- Route-based page composition
+- Design-system tokens
 
 ### Backend Engineering
 
 - FastAPI
-- REST API Development
-- MongoDB Integration
-- Environment-based Configuration
-- Modular Project Architecture
-- Production-style Service Design
-
-### Key Takeaways
-
-Through this project, I learned:
-
-- How Retrieval-Augmented Generation works internally.
-- How embeddings transform text into semantic vector representations.
-- How vector databases retrieve information based on meaning rather than exact keywords.
-- The differences between building a RAG pipeline manually versus using AI frameworks like LangChain.
-- The advantages of cloud-hosted vector databases such as Pinecone for production AI applications.
-- How to design scalable AI backend services using FastAPI and modular architecture.
+- REST API development
+- MongoDB integration
+- Async request handling
+- Modular architecture
+- Service-oriented backend design
 
 ---
 
-# 🚀 Roadmap
+# 🗺 Roadmap
 
-This project will continue to evolve as I explore more advanced AI engineering concepts.
+### Phase 1 — RAG Foundations ✅
 
-### Phase 1 ✅ (Completed)
+- Manual RAG
+- LangChain RAG
+- Pinecone integration
+- Hybrid retrieval
+- Metadata filtering
+- FastAPI REST API
 
-- ✅ Manual RAG Implementation
-- ✅ LangChain RAG Implementation
-- ✅ Pinecone Integration
-- ✅ Hybrid Retrieval
-- ✅ FastAPI REST API
-- ✅ Metadata Filtering
+### Phase 2 — Conversational Intelligence ✅
 
-### Phase 2 ✅ (Completed)
+- Conversation memory
+- Conversation history
+- Search-state persistence
+- Query rewriting
+- Follow-up understanding
+- Entity-aware property tracking
 
-- ✅ Conversational Memory
-- ✅ Conversation History
-- ✅ State-aware Chat Retrieval
+### Phase 3 — Retrieval Quality ✅
 
-### Phase 3 ✅ (Completed)
+- Reranking
+- Source citations
+- Confidence scores
+- Streaming responses
+- Initial async processing
 
-- ✅ Natural Language Filter Extraction
-- ✅ Query Rewriting
-- ✅ Advanced Multi-turn Chat
-- ✅ Entity-aware Property Tracking
+### Phase 4 — Frontend Foundation 🚧
 
-### Phase 4 ✅ (Completed)
+- Responsive dashboard shell ✅
+- Design-system tokens ✅
+- Left navigation ✅
+- Assistant mode tabs ✅
+- Suggested prompts ✅
+- Dubai Market Pulse panel ✅
+- Search-results page 🚧
+- Property-details page 🚧
+- Mobile navigation 🚧
 
-- ✅ Reranking Models
-- ✅ Source Citations
-- ✅ Confidence Scores
+### Phase 5 — Production Readiness
 
-### Phase 5
-
-- ✅ Streaming Responses
-- ✅ Initial Async Processing
-- ⏳ Background Indexing Jobs
-- ⏳ Incremental Data Ingestion
-
-### Phase 6
-
-- ⏳ Authentication & Authorization
-- ⏳ React Frontend
-- ⏳ Docker
-- ⏳ CI/CD Pipeline
-- ⏳ Cloud Deployment (AWS/GCP)
+- Authentication and authorization
+- Background indexing jobs
+- Incremental data ingestion
+- Docker
+- Automated tests
+- CI/CD
+- Cloud deployment
+- Monitoring and logging
 
 ### Long-Term Vision
 
-Transform EstateMind AI into a production-ready AI Copilot capable of assisting users with:
+Transform EstateMind AI into a production-ready AI copilot for:
 
+- Conversational property search
 - Real estate investment analysis
 - Property recommendations
 - Portfolio comparison
 - Market insights
-- Conversational property search
-- Intelligent decision support
+- Neighbourhood intelligence
+- Intelligent real estate decision support
 
-## 👨‍💻 Author
+---
+
+# 👩‍💻 Author
 
 **Kaveesha Abeynayake**
 
@@ -786,7 +713,8 @@ Backend-focused Software Engineer transitioning into AI Engineering.
 Currently exploring:
 
 - Retrieval-Augmented Generation
-- LLM Applications
-- AI Agents
-- Vector Databases
-- Production AI Systems
+- LLM applications
+- AI agents
+- Vector databases
+- Production AI systems
+- AI-powered SaaS products
