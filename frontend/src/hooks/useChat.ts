@@ -108,7 +108,7 @@ export function useChat() {
 
                       isStreaming: false,
                       citations: event.data.citations,
-                      confidence: event.data.confidence,
+                      confidence: event.data.confidence.score,
                       sources: event.data.sources,
                     }
                   : message,

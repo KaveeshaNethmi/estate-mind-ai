@@ -35,6 +35,12 @@ export interface ChatCitation {
   [key: string]: unknown;
 }
 
+export interface ChatConfidence {
+    score: number;
+    level: string;
+    reasons: string[];
+}
+
 export interface PropertySource {
   [key: string]: unknown;
 }
@@ -42,7 +48,7 @@ export interface PropertySource {
 export interface ChatCompleteData {
   answer: string;
   citations: ChatCitation[];
-  confidence: number;
+  confidence: ChatConfidence;
   sources: PropertySource[];
 }
 
@@ -82,5 +88,7 @@ export interface ChatMessage {
 
   citations?: ChatCitation[];
   confidence?: number;
+
+//   confidence?: number;
   sources?: PropertySource[];
 }
