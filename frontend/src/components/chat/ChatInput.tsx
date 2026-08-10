@@ -1,30 +1,28 @@
-import {
-  ArrowUp,
-  MapPin,
-  Paperclip,
-  SlidersHorizontal,
-} from "lucide-react";
+import { ArrowUp, MapPin, Paperclip, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 
 interface ChatInputProps {
   onSubmit?: (message: string) => void;
+  disabled?: boolean;
 }
 
-export const ChatInput = ({ onSubmit }: ChatInputProps) => {
+export const ChatInput = ({ onSubmit, disabled = false }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
   const trimmedMessage = message.trim();
-  const canSubmit = trimmedMessage.length > 0;
+  const canSubmit = trimmedMessage.length > 0 && !disabled;
 
   const handleSubmit = () => {
-    if (!canSubmit) {
+    const trimmedMessage = message.trim();
+
+    if (!trimmedMessage || disabled) {
       return;
     }
 
     onSubmit?.(trimmedMessage);
     setMessage("");
   };
-
+  
   const secondaryButtonClass =
     "focus-ring flex size-10 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:bg-surface-subtle hover:text-text-primary";
 
@@ -96,4 +94,4 @@ export const ChatInput = ({ onSubmit }: ChatInputProps) => {
       </div>
     </div>
   );
-}
+};
